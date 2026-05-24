@@ -1,6 +1,7 @@
 package com.approvalhub.service;
 
 import com.approvalhub.domain.entity.User;
+import com.approvalhub.exception.ResourceNotFoundException;
 import com.approvalhub.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,7 +20,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
         if (user == null) {
             throw new UsernameNotFoundException("User not found: " + username);
         }

@@ -4,7 +4,11 @@ import com.approvalhub.domain.entity.User;
 import com.approvalhub.dto.user.AuthenticationRequest;
 import com.approvalhub.dto.user.AuthenticationResponse;
 import com.approvalhub.dto.user.RegisterRequest;
+import com.approvalhub.exception.ResourceNotFoundException;
+import com.approvalhub.exception.UsernameAlreadyExists;
 import com.approvalhub.repository.UserRepository;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,7 +34,7 @@ public class AuthenticationService {
     public AuthenticationResponse register(RegisterRequest registerRequest) {
         //Vérifie que le username n'est pas déjà utilisé
         if (userRepository.existsByUsername(registerRequest.username())) {
-            throw new RuntimeException("Username is already in use");
+            throw new UsernameAlreadyExists("Username is already in use");
         }
 
         // Crée l'entité utilisateur avec le mot de passe hashé
@@ -58,7 +62,7 @@ public class AuthenticationService {
         );
 
         // Charge l'utilisateur (l'authentification a réussi)
-        User user = userRepository.findByUsername(authRequest.username()).orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        User user = userRepository.findByUsername(authRequest.username()).orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
 
         // Génère le token avec claims additionnels
         Map<String, Object> claims = new HashMap<>();
@@ -72,13 +76,13 @@ public class AuthenticationService {
     // Rafraîchissement du token (prolonge la session)
     public AuthenticationResponse refreshToken(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new RuntimeException("Token invalide");
+            throw new JwtException("Token invalide");
         }
 
         String oldToken = authHeader.substring("Bearer ".length());
         String username = jwtService.extractUsername(oldToken);
 
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
 
         // Génère un nouveau token
         String newToken = jwtService.generateToken(user.getUsername());

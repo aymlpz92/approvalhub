@@ -30,7 +30,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // Récupère le header Authorization
         final String authorizationHeader = request.getHeader("Authorization");
-        System.out.println("Header Authorization reçu: " + authorizationHeader);
 
         // Vérifie la présence du préfixe Bearer
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
