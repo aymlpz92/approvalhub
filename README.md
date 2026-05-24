@@ -48,6 +48,44 @@ git clone https://github.com/aymlpz92/approvalhub
 - Kafka
 - ElasticSearch
 
+### Configuration
+
+#### PostgreSQL
+
+```properties
+spring.application.name=approvalhub
+spring.datasource.url=jdbc:postgresql://localhost:5432/${spring.application.name}
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+spring.jpa.hibernate.ddl-auto=create
+```
+
+#### Kafka
+
+```properties
+spring.kafka.bootstrap-servers=localhost:9092
+app.kafka.topics=document-status-events
+spring.kafka.consumer.group-id=approvalhub
+spring.kafka.consumer.auto-offset-reset=earliest
+spring.kafka.consumer.key-deserializer=org.apache.kafka.common.serialization.StringDeserializer
+spring.kafka.consumer.value-deserializer=org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+spring.kafka.consumer.properties.spring.deserializer.value.delegate.class=org.springframework.kafka.support.serializer.JsonDeserializer
+spring.kafka.consumer.properties.spring.json.trusted.packages=*
+spring.kafka.consumer.properties.spring.json.value.default.type=com.approvalhub.dto.status.DocumentStatusEvent
+spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer
+spring.kafka.producer.value-serializer=org.springframework.kafka.support.serializer.JsonSerializer
+```
+
+#### ElasticSearch
+
+```properties
+spring.elasticsearch.uris=http://localhost:9200
+spring.elasticsearch.username=elastic
+spring.elasticsearch.password=elastic
+spring.elasticsearch.ssl.verification-mode=none
+org.springframework.data.elasticsearch=DEBUG
+```
+
 ### Lancement
 
 ```bash
@@ -80,7 +118,7 @@ mvn spring-boot:run
 ## Structure du projet 
 
 ```
-    com.approvalhub/
+ com.approvalhub/
 │
 ├── config/
 │   └── SecurityConfig.java           # Configuration Spring Security + JWT + AuthenticationProvider
@@ -94,6 +132,7 @@ mvn spring-boot:run
 ├── domain/
 │   ├── entity/
 │   │   ├── Document.java              # Entité JPA — table document
+│   │   ├── ErrorEntity.java           # Objet retourné par le GlobalExceptionHandler (status, message, timestamp)
 │   │   ├── StatusHistory.java         # Entité JPA — table status_history
 │   │   ├── StatusHistoryIndex.java    # Document Elasticsearch — index status_history
 │   │   └── User.java                  # Entité JPA — table users
@@ -114,6 +153,11 @@ mvn spring-boot:run
 │       ├── AuthenticationResponse.java # Réponse auth (token, expiresIn)
 │       ├── RegisterRequest.java       # Requête register (username, password, confirmPassword, role)
 │       └── UserResponseDTO.java       # Réponse utilisateur
+│
+├── exception/
+│   ├── GlobalExceptionHandler.java    # @ControllerAdvice — intercepte les exceptions et retourne un ErrorEntity
+│   ├── ResourceNotFoundException.java # Lancée quand une ressource est introuvable (document, user...)
+│   └── UsernameAlreadyExistsException.java # Lancée lors d'un register avec un username déjà utilisé
 │
 ├── filter/
 │   └── JwtAuthFilter.java             # Filtre JWT — lecture header, validation token, peuplement SecurityContext
