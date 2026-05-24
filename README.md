@@ -29,7 +29,7 @@ Service qui reçoit des documents à valider (contrats, rapports, formulaires). 
 | ------------------ | --------------------------------------------------------------------- |
 | User               | Créer un compte avec un nom d'utilisateur, un mot de passe et un rôle |
 | Document           | Document avec un titre et une description                             |
-| StatusHistory      | Historique de l'ancien et du nouvel états d'un document               |
+| StatusHistory      | Historique de l'ancien et du nouvel état d'un document               |
 
 
 ## Démarrer l'application
